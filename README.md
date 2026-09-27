@@ -151,7 +151,20 @@ Access the application at `http://127.0.0.1:8000`.
 * `PUT /api/leads/{id}` - Update lead details (triggers auto-conversion if status updated to `Won`).
 * `DELETE /api/leads/{id}` - Delete lead (Admin role required).
 * `GET /api/customers` - List converted customers (with search & pagination).
-* `GET /api/customers/{id}` - Show customer details.
+---
+
+## 🌐 How to Access Swagger API Documentation
+
+1. **Via Web Browser (Interactive UI)**:
+   - Click the **`Swagger API Docs`** link in the top navbar of the CRM web application.
+   - Or navigate directly to `http://127.0.0.1:8000/docs` or `http://127.0.0.1:8000/api/documentation`.
+
+2. **OpenAPI 3.0 Specification File**:
+   - The raw OpenAPI 3.0 JSON specification is available at `http://127.0.0.1:8000/swagger.json`.
+
+3. **Testing API Endpoints in Swagger UI**:
+   - Click **Authorize** button in Swagger UI $\rightarrow$ enter the Sanctum `plainTextToken` received from `POST /api/login`.
+   - Interactively execute and test `Leads` and `Customers` endpoints with live parameter validation and schema responses.
 
 ---
 
