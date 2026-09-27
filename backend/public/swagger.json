@@ -1,0 +1,252 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "CRM Lead & Customer Tracker REST API",
+    "description": "Interactive OpenAPI 3.0 REST API documentation for the Laravel CRM Lead & Customer Management System.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "CRM Technical Support",
+      "email": "admin@crm.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8000",
+      "description": "Local Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "SanctumToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Sanctum Token",
+        "description": "Enter the Sanctum plainTextToken returned by POST /api/login"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "System Admin" },
+          "email": { "type": "string", "example": "admin@crm.com" },
+          "role": { "type": "string", "example": "admin", "enum": ["admin", "sales_user"] },
+          "created_at": { "type": "string", "example": "2026-09-27 19:30:00" }
+        }
+      },
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Acme Corp Tech" },
+          "email": { "type": "string", "example": "contact@acmecorp.io" },
+          "phone": { "type": "string", "example": "+1 (555) 019-2834" },
+          "company": { "type": "string", "example": "Acme Corporation" },
+          "leads_count": { "type": "integer", "example": 2 },
+          "created_at": { "type": "string", "example": "2026-09-27 19:30:00" }
+        }
+      },
+      "Lead": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer", "example": 1 },
+          "name": { "type": "string", "example": "Acme Corp Tech" },
+          "email": { "type": "string", "example": "contact@acmecorp.io" },
+          "phone": { "type": "string", "example": "+1 (555) 019-2834" },
+          "company": { "type": "string", "example": "Acme Corporation" },
+          "source": { "type": "string", "example": "Web", "enum": ["Web", "Ads", "Referral"] },
+          "status": { "type": "string", "example": "Won", "enum": ["New", "In Progress", "Won", "Lost"] },
+          "assigned_to": { "type": "integer", "nullable": true, "example": 2 },
+          "follow_up_date": { "type": "string", "format": "date", "example": "2026-10-05" },
+          "notes": { "type": "string", "example": "Client agreed to enterprise tier package." },
+          "customer_id": { "type": "integer", "nullable": true, "example": 1 },
+          "is_converted": { "type": "boolean", "example": true }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/login": {
+      "post": {
+        "summary": "Authenticate User & Obtain Sanctum API Token",
+        "description": "Accepts user credentials and returns Sanctum plainTextToken for API requests.",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "admin@crm.com" },
+                  "password": { "type": "string", "example": "password123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authentication successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": { "type": "string", "example": "Login successful." },
+                    "token": { "type": "string", "example": "1|sanctum_plain_text_token_string..." },
+                    "user": { "$ref": "#/components/schemas/User" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid email or password" }
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "summary": "Logout & Revoke Token",
+        "tags": ["Authentication"],
+        "security": [{ "SanctumToken": [] }],
+        "responses": {
+          "200": { "description": "Successfully logged out" },
+          "401": { "description": "Unauthenticated" }
+        }
+      }
+    },
+    "/api/me": {
+      "get": {
+        "summary": "Get Authenticated User Info",
+        "tags": ["Authentication"],
+        "security": [{ "SanctumToken": [] }],
+        "responses": {
+          "200": { "description": "Authenticated user payload" }
+        }
+      }
+    },
+    "/api/leads": {
+      "get": {
+        "summary": "List & Search Leads (Paginated)",
+        "description": "Returns paginated leads list with search and filter parameters.",
+        "tags": ["Leads"],
+        "security": [{ "SanctumToken": [] }],
+        "parameters": [
+          { "name": "search", "in": "query", "description": "Keyword search across name, email, company", "required": false, "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "description": "Filter by status (New, In Progress, Won, Lost)", "required": false, "schema": { "type": "string" } },
+          { "name": "source", "in": "query", "description": "Filter by source (Web, Ads, Referral)", "required": false, "schema": { "type": "string" } },
+          { "name": "assigned_to", "in": "query", "description": "Filter by assigned user ID", "required": false, "schema": { "type": "integer" } },
+          { "name": "per_page", "in": "query", "description": "Items per page (default: 10)", "required": false, "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated array of lead records" }
+        }
+      },
+      "post": {
+        "summary": "Create New Lead (Auto-converts to Customer if Status is Won)",
+        "tags": ["Leads"],
+        "security": [{ "SanctumToken": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "source", "status"],
+                "properties": {
+                  "name": { "type": "string", "example": "Nexus Innovations" },
+                  "email": { "type": "string", "example": "info@nexus.com" },
+                  "phone": { "type": "string", "example": "+1 (555) 014-9921" },
+                  "company": { "type": "string", "example": "Nexus Ltd" },
+                  "source": { "type": "string", "example": "Web" },
+                  "status": { "type": "string", "example": "Won" },
+                  "assigned_to": { "type": "integer", "example": 2 },
+                  "follow_up_date": { "type": "string", "example": "2026-10-10" },
+                  "notes": { "type": "string", "example": "Requested enterprise quotation." }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Lead created successfully" }
+        }
+      }
+    },
+    "/api/leads/{id}": {
+      "get": {
+        "summary": "Get Single Lead Details",
+        "tags": ["Leads"],
+        "security": [{ "SanctumToken": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Lead record details" },
+          "404": { "description": "Lead not found" }
+        }
+      },
+      "put": {
+        "summary": "Update Lead Details (Triggers Auto-Conversion if Status updated to Won)",
+        "tags": ["Leads"],
+        "security": [{ "SanctumToken": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Lead" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Lead updated successfully" }
+        }
+      },
+      "delete": {
+        "summary": "Delete Lead (Admin Only)",
+        "tags": ["Leads"],
+        "security": [{ "SanctumToken": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Lead deleted successfully" },
+          "403": { "description": "Forbidden. Only Admins can delete leads." }
+        }
+      }
+    },
+    "/api/customers": {
+      "get": {
+        "summary": "List Converted Customers (Paginated)",
+        "tags": ["Customers"],
+        "security": [{ "SanctumToken": [] }],
+        "parameters": [
+          { "name": "search", "in": "query", "description": "Search customer name, email, company", "required": false, "schema": { "type": "string" } },
+          { "name": "per_page", "in": "query", "description": "Items per page (default: 10)", "required": false, "schema": { "type": "integer", "default": 10 } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated list of converted active customers" }
+        }
+      }
+    },
+    "/api/customers/{id}": {
+      "get": {
+        "summary": "Get Single Customer Details",
+        "tags": ["Customers"],
+        "security": [{ "SanctumToken": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "Customer record details with linked leads" }
+        }
+      }
+    }
+  }
+}

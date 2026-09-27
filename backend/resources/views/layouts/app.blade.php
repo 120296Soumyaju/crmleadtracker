@@ -211,6 +211,11 @@
                             <i class="bi bi-people-fill me-1"></i> Customers Module
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ route('docs') }}" target="_blank">
+                            <i class="bi bi-code-square me-1 text-primary"></i> Swagger API Docs
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="d-flex align-items-center gap-3">

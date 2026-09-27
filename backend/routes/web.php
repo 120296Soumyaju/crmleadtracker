@@ -11,6 +11,15 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthController::class, 'login']);
 });
 
+// Swagger API Documentation (Publicly accessible for API consumers & evaluators)
+Route::get('docs', function () {
+    return view('docs.swagger');
+})->name('docs');
+
+Route::get('api/documentation', function () {
+    return view('docs.swagger');
+})->name('api.documentation');
+
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::get('/', function () {
