@@ -139,7 +139,9 @@ Access the application at `http://127.0.0.1:8000`.
 
 ---
 
-### 4. RESTful API (Sanctum Authenticated)
+### 4. RESTful API & Swagger Documentation
+* **Interactive Swagger UI:** `http://127.0.0.1:8000/docs` (or `/api/documentation`)
+* **OpenAPI 3.0 JSON Spec:** `http://127.0.0.1:8000/swagger.json`
 * `POST /api/login` - Authenticate & obtain Sanctum plainTextToken.
 * `POST /api/logout` - Revoke current access token.
 * `GET /api/me` - Authenticated user info.
